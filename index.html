@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>My Web Page</title>
+    <link rel="stylesheet" href="styles.css">
+    <script type="importmap">
+        {
+          "imports": {
+            "three": "https://unpkg.com/three@0.162.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.162.0/examples/jsm/"
+          }
+        }
+      </script>
+</head>
+<body>
+    <h1>Welcome to My Web Page</h1>
+
+    <input type="range" id="speedRange" min="0.01" max="100" value="0.1" step="0.01" oninput="updateSpeed(this.value)">
+    <script type="module" src="js/main.js"></script>
+    <script type="text/javascript" src="js/slider.js"></script>
+</body>
+</html>
