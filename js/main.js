@@ -51,7 +51,7 @@ let camZStart = 150;
 let colors = ["#09f04a","#12ffd1","#0cbcff","#540fff","#cb0eff","#ff0ebc","#ff0e41","#ff510b","#ffca09"];
 
 // playhead color
-let playheadColor = "000000";
+let playheadColor = "#000000";
 
 const width = window.innerWidth, height = window.innerHeight;
 
@@ -64,7 +64,7 @@ document.body.appendChild( renderer.domElement );
 const scene = new THREE.Scene();
 
 // camera
-const camera = new THREE.PerspectiveCamera( 45, width / height, 1, 500 );
+const camera = new THREE.PerspectiveCamera( 45, width / height, 1, 1000 );
 camera.position.set(camXStatrt, camYStart, camZStart);
 camera.lookAt(0, 0, 0 );
 camera.rotation.x = -1.39;
