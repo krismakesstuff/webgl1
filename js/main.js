@@ -47,7 +47,11 @@ let camXStatrt = 75;
 let camYStart = 120;
 let camZStart = 150;
 
+// track colors
+let colors = ["#09f04a","#12ffd1","#0cbcff","#540fff","#cb0eff","#ff0ebc","#ff0e41","#ff510b","#ffca09"];
 
+// playhead color
+let playheadColor = "000000";
 
 const width = window.innerWidth, height = window.innerHeight;
 
@@ -79,8 +83,8 @@ controls.update();
 // add base plane
 const planeSize = 10;
 const planeGeometry = new THREE.PlaneGeometry( planeSize, planeSize, 32 );
-const planeMaterial = new THREE.MeshBasicMaterial( {color: 0x1B263B, side: THREE.DoubleSide} );
-const plane = new THREE.Mesh( planeGeometry, planeMaterial );
+// const planeMaterial = new THREE.MeshBasicMaterial( {color: colors[i], side: THREE.DoubleSide} );
+// const plane = new THREE.Mesh( planeGeometry, planeMaterial );
 
 // plane.rotation.x = Math.PI / 2;
 // scene.add( plane );
@@ -91,7 +95,8 @@ const path = [];
 const pathDistance = 2;
 //const pathLength = 50;
 
-for (let i = 0; i < numInstruments; i++) {
+for (let i = 0; i < colors.length; i++) {
+	const planeMaterial = new THREE.MeshBasicMaterial( {color: playheadColor, side: THREE.DoubleSide} );
 	const pathPlane = new THREE.Mesh( planeGeometry, planeMaterial );
 	pathPlane.position.z = (i * planeSize) + pathDistance * i;
 	pathPlane.rotation.x = Math.PI / 2;
@@ -100,33 +105,22 @@ for (let i = 0; i < numInstruments; i++) {
 }
 
 
+// make a track for each color on the axis
+const tracks = [];
+const trackDistance = 100;
+const trackThickness = planeSize * 0.9;
 
-// load model
-const gltfLoader = new GLTFLoader();
+for (let i = 0; i < colors.length; i++) {
+	const trackGeometry = new THREE.BoxGeometry( trackDistance, 1, trackThickness );
+	const trackMaterial = new THREE.MeshBasicMaterial( {color: colors[i]} );
+	const track = new THREE.Mesh( trackGeometry, trackMaterial );
+	track.position.x = planeSize * 2;
+	track.position.y = -1;
+	track.position.z = (i * trackThickness) + pathDistance * i;
+	tracks.push(track);
+	scene.add( track );
+}
 
-gltfLoader.load( './assets/studio_iso.glb', function ( gltf ) {
-	
-
-	const model = gltf.scene;
-
-	//renderer.compileAsync( model, camera, scene );
-	scene.add( model );
-
-	renderer.render( scene, camera );
-
-},
-// called while loading is progressing
-function ( xhr ) {
-
-	console.log('loading gltf model.. ' + ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-
-},
-// called when loading has errors
-function ( error ) {
-
-	console.log( 'An error loading gltf happened' );
-
-} );
 
 
 // line
