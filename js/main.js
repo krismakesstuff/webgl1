@@ -47,11 +47,19 @@ let camXStatrt = 75;
 let camYStart = 120;
 let camZStart = 150;
 
+const objects = [];
+
+
+document.addEventListener( 'pointermove', onPointerMove );
+
 // track colors
 let colors = ["#09f04a","#12ffd1","#0cbcff","#540fff","#cb0eff","#ff0ebc","#ff0e41","#ff510b","#ffca09"];
 
 // playhead color
-let playheadColor = "#000000";
+let playheadColor = "#ECE9E4";
+
+// mouseOver color
+let mouseOverColor = "#4C4C4C";
 
 const width = window.innerWidth, height = window.innerHeight;
 
@@ -64,7 +72,7 @@ document.body.appendChild( renderer.domElement );
 const scene = new THREE.Scene();
 
 // camera
-const camera = new THREE.PerspectiveCamera( 45, width / height, 1, 1000 );
+const camera = new THREE.PerspectiveCamera( 45, width / height, 1, 1500 );
 camera.position.set(camXStatrt, camYStart, camZStart);
 camera.lookAt(0, 0, 0 );
 camera.rotation.x = -1.39;
@@ -75,10 +83,15 @@ camera.rotation.z = 0.03;
 const light = new THREE.AmbientLight( 0xE0E1DD );
 scene.add( light );
 
+// raycaster
+let raycaster = new THREE.Raycaster();
+let pointer = new THREE.Vector2();
 
 // controls 
 const controls = new OrbitControls( camera, renderer.domElement );
 controls.update();
+
+
 
 // add base plane
 const planeSize = 10;
@@ -95,31 +108,62 @@ const path = [];
 const pathDistance = 2;
 //const pathLength = 50;
 
-for (let i = 0; i < colors.length; i++) {
-	const planeMaterial = new THREE.MeshBasicMaterial( {color: playheadColor, side: THREE.DoubleSide} );
-	const pathPlane = new THREE.Mesh( planeGeometry, planeMaterial );
-	pathPlane.position.z = (i * planeSize) + pathDistance * i;
-	pathPlane.rotation.x = Math.PI / 2;
-	path.push(pathPlane);
-	scene.add( pathPlane );
-}
+
 
 
 // make a track for each color on the axis
+// const tracks = [];
+// const trackDistance = 300;
+// const trackThickness = 10;
+
+// for (let i = 0; i < colors.length; i++) {
+// 	const trackGeometry = new THREE.BoxGeometry( trackDistance, 1, trackThickness );
+// 	const trackMaterial = new THREE.MeshBasicMaterial( {color: colors[i]} );
+// 	const track = new THREE.Mesh( trackGeometry, trackMaterial );
+// 	track.position.x = planeSize * 2;
+// 	track.position.y = -1;
+// 	track.position.z = (i * trackThickness) + pathDistance * i;
+// 	tracks.push(track);
+// 	objects.push(track);
+// 	scene.add( track );
+// }
+
+// make a track for each color, where each track is a hollow circle around the center. 
 const tracks = [];
 const trackDistance = 100;
-const trackThickness = planeSize * 0.9;
+const trackThickness = 10;
+const trackRadius = 200;
+const trackSpacing = 10;
 
 for (let i = 0; i < colors.length; i++) {
-	const trackGeometry = new THREE.BoxGeometry( trackDistance, 1, trackThickness );
+	const trackGeometry = new THREE.TorusGeometry( trackRadius, trackThickness, 16, 100 );
 	const trackMaterial = new THREE.MeshBasicMaterial( {color: colors[i]} );
 	const track = new THREE.Mesh( trackGeometry, trackMaterial );
-	track.position.x = planeSize * 2;
-	track.position.y = -1;
-	track.position.z = (i * trackThickness) + pathDistance * i;
+	track.position.x = 0;
+	track.position.y = trackSpacing + (i * trackThickness);
+	track.position.z = 0 ;
+	track.rotation.x = Math.PI / 2;
 	tracks.push(track);
+	objects.push(track);
 	scene.add( track );
 }
+
+// make a playhead perpendicular to tracks that rotates around the tracks.
+const playheadHeight = (tracks.length * trackThickness) + (tracks.length * trackSpacing) /2;
+const playheadWidth = 10;
+const playheadDepth = 4;
+
+const playheadGeometry = new THREE.BoxGeometry( playheadWidth, playheadHeight, playheadDepth);
+const playheadMaterial = new THREE.MeshBasicMaterial( {color: playheadColor} );
+const playhead = new THREE.Mesh( playheadGeometry, playheadMaterial );
+playhead.position.x = 0;
+playhead.position.y = playheadHeight / 2;
+playhead.position.z = 0;
+scene.add( playhead );
+
+
+
+
 
 
 
@@ -189,6 +233,13 @@ function animate() {
 	// mesh.rotation.x += xSpeed;
 	// mesh.rotation.y += ySpeed;
 
+	// update playhead position and rotation around the tracks
+	playhead.position.x = Math.sin(Date.now() * 0.001) * (trackRadius + trackSpacing);
+	playhead.position.z = Math.cos(Date.now() * 0.001) * (trackRadius + trackSpacing);
+	playhead.rotation.y += 0.01;
+
+
+
 	controls.update();
 	
 	//console.log("position: " + camera.position.x + ", " + camera.position.y + ", " + camera.position.z);
@@ -209,4 +260,35 @@ if ( WebGL.isWebGLAvailable() ) {
 	const warning = WebGL.getWebGLErrorMessage();
 	document.getElementById( 'container' ).appendChild( warning );
 
+}
+
+
+// mouseMove event
+function onPointerMove( event ) {
+
+	pointer.set( 
+		( event.clientX / window.innerWidth ) * 2 - 1,
+	 	- ( event.clientY / window.innerHeight ) * 2 + 1 
+	);
+
+	raycaster.setFromCamera( pointer, camera );
+
+	// const intersects = raycaster.intersectObjects( objects, false );
+
+	// if ( intersects.length > 0 ) {
+
+	// 	const intersect = intersects[ 0 ];
+
+	// 	intersect.object.material.color.set( mouseOverColor );
+	// }
+	
+	// // set objects back to original color if not intersected
+	// for (let i = 0; i < objects.length; i++) {
+	// 	if(objects[i] !== intersects[0].object)
+	// 	{
+	// 		objects[i].material.color.set( colors[i] );
+	// 	}
+	// }
+	
+	renderer.render( scene, camera );
 }
