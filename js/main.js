@@ -43,9 +43,9 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 let seqRowLength = 16;
 let numInstruments = 8;
-let camXStatrt = 75;
-let camYStart = 120;
-let camZStart = 150;
+let camXStart = 0;
+let camYStart = 35;
+let camZStart = 250;
 
 const objects = [];
 
@@ -53,7 +53,9 @@ const objects = [];
 document.addEventListener( 'pointermove', onPointerMove );
 
 // track colors
-let colors = ["#09f04a","#12ffd1","#0cbcff","#540fff","#cb0eff","#ff0ebc","#ff0e41","#ff510b","#ffca09"];
+// let colors = ["#09f04a","#12ffd1","#0cbcff","#540fff","#cb0eff","#ff0ebc","#ff0e41","#ff510b","#ffca09"];
+
+let colors = ["#ff1970", "#e81766", "#db12af", "#bf09d5", "#a200fa", "#6500e9", "#3c17db", "#2800d7"];
 
 // playhead color
 let playheadColor = "#ECE9E4";
@@ -72,16 +74,29 @@ document.body.appendChild( renderer.domElement );
 const scene = new THREE.Scene();
 
 // camera
-const camera = new THREE.PerspectiveCamera( 45, width / height, 1, 1500 );
-camera.position.set(camXStatrt, camYStart, camZStart);
-camera.lookAt(0, 0, 0 );
-camera.rotation.x = -1.39;
-camera.rotation.y = 0.005;
-camera.rotation.z = 0.03;
+const camera = new THREE.PerspectiveCamera( 70, width / height, 1, 1500 );
+camera.position.set(camXStart, camYStart, camZStart);
+//camera.lookAt(0, 0, 0 );
+
+// camera.rotation.x = -1.39;
+// camera.rotation.y = 0.005;
+// camera.rotation.z = 0.03;
 
 // light
 const light = new THREE.AmbientLight( 0xE0E1DD );
 scene.add( light );
+
+// point light
+const pointLight = new THREE.PointLight( 0x09f04a );
+pointLight.position.set( 50, 50, 50 );
+
+scene.add( pointLight );
+
+// add a grid helper
+const gridHelper = new THREE.GridHelper( 1000, 100 );
+scene.add( gridHelper );
+
+
 
 // raycaster
 let raycaster = new THREE.Raycaster();
@@ -128,6 +143,7 @@ const pathDistance = 2;
 // 	scene.add( track );
 // }
 
+
 // make a track for each color, where each track is a hollow circle around the center. 
 const tracks = [];
 const trackDistance = 100;
@@ -140,13 +156,15 @@ for (let i = 0; i < colors.length; i++) {
 	const trackMaterial = new THREE.MeshBasicMaterial( {color: colors[i]} );
 	const track = new THREE.Mesh( trackGeometry, trackMaterial );
 	track.position.x = 0;
-	track.position.y = trackSpacing + (i * trackThickness);
+	track.position.y = trackSpacing + (i * (trackThickness + trackSpacing));
 	track.position.z = 0 ;
 	track.rotation.x = Math.PI / 2;
 	tracks.push(track);
 	objects.push(track);
 	scene.add( track );
 }
+
+const playheadSpacing = 10;
 
 // make a playhead perpendicular to tracks that rotates around the tracks.
 const playheadHeight = (tracks.length * trackThickness) + (tracks.length * trackSpacing) /2;
@@ -159,11 +177,9 @@ const playhead = new THREE.Mesh( playheadGeometry, playheadMaterial );
 playhead.position.x = 0;
 playhead.position.y = playheadHeight / 2;
 playhead.position.z = 0;
+playhead.rotation.y = 0;
+
 scene.add( playhead );
-
-
-
-
 
 
 
@@ -225,7 +241,9 @@ scene.add( playhead );
 
 // drawing frame
 
-
+let angle = 0;	
+let rotationSpeed = 0.005;
+let camDistanceMultiplier = 1.5;
 
 function animate() {
 	requestAnimationFrame( animate );
@@ -233,17 +251,25 @@ function animate() {
 	// mesh.rotation.x += xSpeed;
 	// mesh.rotation.y += ySpeed;
 
+	let sinAngle = Math.sin(angle);
+	let cosAngle = Math.cos(angle)
+
 	// update playhead position and rotation around the tracks
-	playhead.position.x = Math.sin(Date.now() * 0.001) * (trackRadius + trackSpacing);
-	playhead.position.z = Math.cos(Date.now() * 0.001) * (trackRadius + trackSpacing);
-	playhead.rotation.y += 0.01;
+	playhead.position.x = sinAngle * (trackRadius + playheadSpacing);
+	playhead.position.z = cosAngle * (trackRadius + playheadSpacing);
+	//playhead.rotation. += 0.01;
 
 
+	camera.position.x = playhead.position.x * camDistanceMultiplier;  
+	camera.position.z = playhead.position.z * camDistanceMultiplier;
 
-	controls.update();
 	
-	//console.log("position: " + camera.position.x + ", " + camera.position.y + ", " + camera.position.z);
-	//console.log("rotation: " + camera.rotation.x + ", " + camera.rotation.y + ", " + camera.rotation.z);
+	camera.rotateOnAxis(new THREE.Vector3(0, 1, 0), rotationSpeed);
+	
+	angle += rotationSpeed;
+
+	//controls.update();
+	
 	renderer.render( scene, camera );
 }
 
