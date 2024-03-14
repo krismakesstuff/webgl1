@@ -151,18 +151,29 @@ const trackThickness = 10;
 const trackRadius = 200;
 const trackSpacing = 10;
 
-for (let i = 0; i < colors.length; i++) {
-	const trackGeometry = new THREE.TorusGeometry( trackRadius, trackThickness, 16, 100 );
-	const trackMaterial = new THREE.MeshBasicMaterial( {color: colors[i]} );
-	const track = new THREE.Mesh( trackGeometry, trackMaterial );
-	track.position.x = 0;
-	track.position.y = trackSpacing + (i * (trackThickness + trackSpacing));
-	track.position.z = 0 ;
-	track.rotation.x = Math.PI / 2;
-	tracks.push(track);
-	objects.push(track);
-	scene.add( track );
-}
+// const trackGeometry = new THREE.TorusGeometry( trackRadius, trackThickness, 16, 100 );
+const trackGeometry = new THREE.CircleGeometry( trackRadius, 100 );
+
+const trackMaterial = new THREE.MeshBasicMaterial( {color: colors[0]} );
+const track = new THREE.Mesh( trackGeometry, trackMaterial );
+track.position.x = 0;
+track.position.y = trackSpacing;
+track.position.z = -10 ;
+track.rotation.x = Math.PI / 2;
+//tracks.push(track);
+objects.push(track);
+scene.add( track );
+// for (let i = 0; i < colors.length; i++) {
+// 	const trackMaterial = new THREE.MeshBasicMaterial( {color: colors[i]} );
+// 	const track = new THREE.Mesh( trackGeometry, trackMaterial );
+// 	track.position.x = 0;
+// 	track.position.y = trackSpacing + (i * (trackThickness + trackSpacing));
+// 	track.position.z = 0 ;
+// 	track.rotation.x = Math.PI / 2;
+// 	tracks.push(track);
+// 	objects.push(track);
+// 	scene.add( track );
+// }
 
 const playheadSpacing = 10;
 
@@ -179,9 +190,9 @@ playhead.position.y = playheadHeight / 2;
 playhead.position.z = 0;
 playhead.rotation.y = 0;
 
-scene.add( playhead );
+//scene.add( playhead );
 
-
+const trackCount = trackGeometry.attributes.position.count;
 
 // line
 // const material = new THREE.LineBasicMaterial({ color: 0x00ff00 });
@@ -242,7 +253,7 @@ scene.add( playhead );
 // drawing frame
 
 let angle = 0;	
-let rotationSpeed = 0.005;
+let rotationSpeed = 0.05;
 let camDistanceMultiplier = 1.5;
 
 function animate() {
@@ -255,16 +266,35 @@ function animate() {
 	let cosAngle = Math.cos(angle)
 
 	// update playhead position and rotation around the tracks
-	playhead.position.x = sinAngle * (trackRadius + playheadSpacing);
-	playhead.position.z = cosAngle * (trackRadius + playheadSpacing);
+	//playhead.position.x = sinAngle * (trackRadius + playheadSpacing);
+	//playhead.position.z = cosAngle * (trackRadius + playheadSpacing);
 	//playhead.rotation. += 0.01;
 
+	// const now = Date.now() / 3000;
 
-	camera.position.x = playhead.position.x * camDistanceMultiplier;  
-	camera.position.z = playhead.position.z * camDistanceMultiplier;
+	// // set trackGeometry
+	// for(let i = 0; i < trackCount; i++)
+	// {
+	// 	const currentX = trackGeometry.attributes.position.getX(i);
+	// 	const currentY = trackGeometry.attributes.position.getY(i);
+
+	// 	const xsin = Math.sin(currentX + now) * 50;
+	// 	const ycos = Math.cos(currentY + now) * 50;
+
+	// 	trackGeometry.attributes.position.setZ(i, ycos);
+	// 	//trackGeometry.attributes.position.setX(i, ycos);
+	// }
+
+	// trackGeometry.attributes.position.needsUpdate = true;
+
+
+
+
+	//camera.position.x = playhead.position.x * camDistanceMultiplier;  
+	//camera.position.z = playhead.position.z * camDistanceMultiplier;
+	//camera.rotateOnAxis(new THREE.Vector3(0, 1, 0), rotationSpeed);
 
 	
-	camera.rotateOnAxis(new THREE.Vector3(0, 1, 0), rotationSpeed);
 	
 	angle += rotationSpeed;
 
